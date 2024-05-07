@@ -1,0 +1,47 @@
+name: Trigger auto deployment for container-app-t76nq6sczojjc
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ main ]
+    paths:
+    - '//**'
+    - '.github/workflows/container-app-t76nq6sczojjc-AutoDeployTrigger-af10ae92-af1b-43ce-9be9-66796baf8334.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:      
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions: 
+      id-token: write #This is required for requesting the OIDC JWT Token
+      contents: read #Required when GH token is used to authenticate with private repo
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.CONTAINERAPPT76NQ6SCZOJJC_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.CONTAINERAPPT76NQ6SCZOJJC_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.CONTAINERAPPT76NQ6SCZOJJC_AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }} 
+          registryUrl: 
+          registryUsername: ${{ secrets.CONTAINERAPPT76NQ6SCZOJJC_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.CONTAINERAPPT76NQ6SCZOJJC_REGISTRY_PASSWORD }}
+          containerAppName: container-app-t76nq6sczojjc
+          resourceGroup: djangoappspacesba9b
+          imageToBuild: default/[parameters('containerAppName')]:${{ github.sha }}
+          _buildArgumentsKey_: |
+            _buildArgumentsValues_
+
+
